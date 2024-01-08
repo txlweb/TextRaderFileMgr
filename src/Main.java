@@ -2,53 +2,20 @@ import org.ice1000.jimgui.*;
 import org.ice1000.jimgui.flag.JImWindowFlags;
 import org.ice1000.jimgui.util.JniLoader;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 
 
 public class Main {
-    public static void main(String[] args) throws IOException {
-        System.setProperty("file.encoding", "UTF-8");
-        System.out.println("Hello world!");
-        //导出库文件  ./annotations-20.1.0.jar ./core-v0.22.0.jar
-        if (Main.class.getClassLoader().getResource("epublib-core-4.0-complete.jar") != null) {
-            InputStream in = Objects.requireNonNull(Main.class.getClassLoader().getResource("epublib-core-4.0-complete.jar")).openStream();
-            try (OutputStream ot = new FileOutputStream("./epublib-core-4.0-complete.jar")) {
-                byte[] bytes = new byte[1024];
-                int byteread;
-                while ((byteread = in.read(bytes)) != -1) ot.write(bytes, 0, byteread);
-            }
-        }
-        if (Main.class.getClassLoader().getResource("annotations-20.1.0.jar") != null) {
-            InputStream in = Objects.requireNonNull(Main.class.getClassLoader().getResource("annotations-20.1.0.jar")).openStream();
-            try (OutputStream ot = new FileOutputStream("./annotations-20.1.0.jar")) {
-                byte[] bytes = new byte[1024];
-                int byteread;
-                while ((byteread = in.read(bytes)) != -1) ot.write(bytes, 0, byteread);
-            }
-        }
-        if (Main.class.getClassLoader().getResource("core-v0.22.0.jar") != null) {
-            InputStream in = Objects.requireNonNull(Main.class.getClassLoader().getResource("core-v0.22.0.jar")).openStream();
-            try (OutputStream ot = new FileOutputStream("./core-v0.22.0.jar")) {
-                byte[] bytes = new byte[1024];
-                int byteread;
-                while ((byteread = in.read(bytes)) != -1) ot.write(bytes, 0, byteread);
-            }
-        }
+    public static void start_window() throws IOException {
+
 
         JniLoader.load();
         JImGui imGui = new JImGui("T-R-Mgr");
         JImGuiIO imGio = imGui.getIO();
         //导出字库
-        if (Main.class.getClassLoader().getResource("msyh.ttc") != null) {
-            InputStream in = Objects.requireNonNull(Main.class.getClassLoader().getResource("msyh.ttc")).openStream();
-            try (OutputStream ot = new FileOutputStream("./msyh.ttc")) {
-                byte[] bytes = new byte[1024];
-                int byteread;
-                while ((byteread = in.read(bytes)) != -1) ot.write(bytes, 0, byteread);
-            }
-        }
+
         if (Main.class.getClassLoader().getResource("msyh.ttc") != null)
             imGio.getFonts().addFontFromFile("./msyh.ttc",20.0f,new JImFontConfig(),imGio.getFonts().getGlyphRangesForChineseFull());
         else//测试环境用的
