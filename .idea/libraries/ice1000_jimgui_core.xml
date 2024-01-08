@@ -1,0 +1,17 @@
+<component name="libraryTable">
+  <library name="ice1000.jimgui.core" type="repository">
+    <properties maven-id="org.ice1000.jimgui:core:v0.22.0" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/core-v0.22.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/annotations-20.1.0.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/lib/core-v0.22.0-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/annotations-20.1.0-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/core-v0.22.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/annotations-20.1.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

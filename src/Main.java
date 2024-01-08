@@ -4,15 +4,19 @@ import org.ice1000.jimgui.util.JniLoader;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 
 public class Main {
     public static void start_window() throws IOException {
 
-
         JniLoader.load();
         JImGui imGui = new JImGui("T-R-Mgr");
+
         JImGuiIO imGio = imGui.getIO();
         //导出字库
 
@@ -23,7 +27,9 @@ public class Main {
 
         List<List<String>> s =  PathScanLib.PathScan(true,"");
         NativeInt line_max_size = new NativeInt();
-        line_max_size.modifyValue(45);
+        line_max_size.modifyValue(42);
+
+
 
 
 
@@ -45,27 +51,72 @@ public class Main {
         NS_add_string(V_s_p, String.valueOf(Config_dirs_b.NormPort));
         V_s_l.modifyValue(1);
         //配置窗口可视情况
-        boolean TRMGR = false;
-        boolean TRCOF = false;
+        boolean TRMGR = true;
+        boolean TRCOF = true;
         NativeBool nb = new NativeBool();
         NativeBool nb1 = new NativeBool();
         nb.modifyValue(true);
         nb1.modifyValue(true);
+
+        File directory = new File(Config_dirs.MainPath);
+        long directorySize = calculateDirectorySize(directory);
+
         while (!imGui.windowShouldClose()){
             imGui.initNewFrame();
             JImGui.beginMainMenuBar();
+            if(imGui.beginMenu("文件",true)){
+                if(imGui.button("导入teip/epub")) {
+                    String fn = Window_Select_Things(imGui,"选择文件 - 导入teip或epub文件");
+                    if(Objects.equals(fn, "epub")){
+                        TeipMake.EpubMake(fn);
+                    } else if (Objects.equals(fn, "teip")) {
+                        TeipMake.Unzip(fn,Config_dirs.MainPath);
+                    }else {
+                        if (Window_y_n(imGui, "选择文件类型", "我们不能准确分别这个文件的类型,请选择\r\n   是钮为epub文件   否钮 为teip文件\r\n 如果您导入的epub文件并不可读,会导致程序闪退,请删除它再启动程序."))
+                            TeipMake.EpubMake(fn);
+                        else
+                            TeipMake.Unzip(fn,Config_dirs.MainPath);
+                    }
+
+                }
+                if(imGui.button("导入txt")){
+                    String fn = Window_Select_Things(imGui,"选择文件 - 导入txt文件");
+                    String fn1 = Window_Select_Things(imGui,"选择文件 - 导入图标(jpg)文件");
+                    TeipMake.autoMake(fn,
+                            "tmp.zip",
+                            Window_Input(imGui,"输入信息","请输入小说标题","测试小说Vb"),
+                            fn1,
+                            Window_Input(imGui,"输入信息","请输入小说切章规则(不用动)",".*第.*章.*"),
+                            Window_Input(imGui,"输入信息","请输入小说作者","测试作者"),
+                            Window_Input(imGui,"输入信息","请输入小说简介","测试简介"));
+                    TeipMake.Unzip("tmp.zip",Config_dirs.MainPath);
+                    Window_y_n(imGui, "完成.", "小说已经成功导入.");
+
+                }
+                JImGuiGen.endMenu();
+            }
             if(imGui.beginMenu("打开窗口",true)){
-                if(imGui.button("T-R-Mgr")) {
+                if(imGui.button("小说管理")) {
                     TRMGR = true;
                     nb.modifyValue(true);
                 }
-                if(imGui.button("T-R-Config")){
+                if(imGui.button("程序配置")){
                     TRCOF=true;
                     nb1.modifyValue(true);
                 }
                 JImGuiGen.endMenu();
             }
+            if(imGui.beginMenu("杂项",true)){
+                if(imGui.button("关于")) {
+                    if(!Window_y_n(imGui, "关于 - TextReader Config tool", "Vre. Beta 1.3.0-2091b-240108\r\n  这是一款由IDlike自主研发的小说阅读器,本程序为书籍管\r\n理工具,本程序仅供学习参考,不可商用!\r\n                 IDSOFT @ IDlike 2024/1/8"))
+                        while(!Window_y_n(imGui, "[悲]", "作者会掉小珍珠的 嘤嘤嘤..."));
 
+                }
+                if(imGui.button("退出程序")){
+                    return;
+                }
+                JImGuiGen.endMenu();
+            }
             JImGui.endMenuBar();
             if(TRMGR) {
                 if (imGui.begin("TextReader File Manager",nb)) {
@@ -180,7 +231,7 @@ public class Main {
                             imGui.sameLine();
                             imGui.sliderInt("5", V_s_l, 0, 2);
                             imGui.sameLine();
-                            if (imGui.button("恢复默认 ")) {
+                            if (imGui.button("恢复默认    ")) {
                                 V_s_l.modifyValue(1);
                             }
                             if (imGui.button("保存配置文件")) {
@@ -193,20 +244,79 @@ public class Main {
                     JImGuiGen.endTabBar();
                 }
             }
-
-
+            if (imGui.begin("TextReader Storage Manager")) {
+                imGui.text("小说占用空间: "+new DecimalFormat("#.00").format((float)((int) (directorySize))/1024/1024)+"MB");
+                imGui.sameLine();
+                if(imGui.button("刷新")) directorySize = calculateDirectorySize(directory);
+                imGui.setWindowSize("TextReader Storage Manager", 300, 70);
+                imGui.setWindowPos("TextReader Storage Manager",0,32);
+            }
 
             imGui.render();
         }
     }
-    public static NativeString NS_add_string(NativeString ns,String text){
+    public static void NS_add_string(NativeString ns,String text){
         //逆天!居然得一个一个字节压进去(
         byte[] a = text.getBytes();
         for (byte b : a) {
             ns.append(b);
         }
-        return ns;
     }
+    public static List<List<String>> ScanPathWithThis(String path){
+        File file = new File(path);
+        List<List<String>> Bi = new ArrayList<>();
+        //目录,文件
+        Bi.add(new ArrayList<>());
+        Bi.add(new ArrayList<>());
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (File value : files) {
+                    if (value.isDirectory()) {
+                        Bi.get(0).add(value.getName());
+                    }else{
+                        Bi.get(1).add(value.getName());
+                    }
+                }
+            }
+        }
+        return Bi;
+    }
+    public static String Window_Select_Things(JImGui imGui,String Title) {
+        String pa = "./";
+        List<List<String>> p = ScanPathWithThis(pa);
+        while (!imGui.windowShouldClose()) {
+            imGui.initNewFrame();
+            imGui.begin(Title,new NativeBool(), JImWindowFlags.NoNavFocus);
+            if(imGui.button("[Path] ..")) {
+                String[] a = pa.split("/");
+                System.out.println(Arrays.toString(a));
+                pa="";
+                for (int i = 0; i < a.length - 1; i++) {
+                    pa = pa + a[i]+"/";
+                }
+                if(pa.equals(".")) pa="./";
+                if(pa.equals("")) pa="./";
+                p = ScanPathWithThis(pa);
+            }
+            for (int i = 0; i < p.get(0).size(); i++) {
+                if(imGui.button("[Path] "+p.get(0).get(i))){
+                    pa = pa+"/"+p.get(0).get(i);
+                    p = ScanPathWithThis(pa);
+                    System.out.println(p);
+                }
+            }
+            imGui.beginTabBar("114514");
+            for (int i = 0; i < p.get(1).size(); i++) {
+                if(imGui.button("[File] "+p.get(1).get(i))){
+                    return pa+"/"+p.get(1).get(i);
+                }
+            }
+            imGui.render();
+        }
+        return "";
+    }
+
     public static boolean Window_y_n(JImGui imGui,String Title,String say){
         while (!imGui.windowShouldClose()) {
             imGui.initNewFrame();
@@ -214,7 +324,7 @@ public class Main {
             imGui.setWindowSize(Title,400,300);
             imGui.text(Title);
             imGui.text("");
-            imGui.text(AutoBR(say, 40));
+            imGui.text(say);
             if (imGui.button("是(Y)")) {
                 return true;
             }
@@ -225,6 +335,26 @@ public class Main {
             imGui.render();
         }
         return false;
+    }
+    public static String Window_Input(JImGui imGui,String Title,String say,String auto_thing){
+        NativeString out = new NativeString();
+        NS_add_string(out,auto_thing);
+        while (!imGui.windowShouldClose()) {
+            imGui.initNewFrame();
+            imGui.begin(Title,new NativeBool(), JImWindowFlags.NoTitleBar);
+            imGui.setWindowSize(Title,400,300);
+            imGui.text(Title);
+            imGui.text("");
+            imGui.text(AutoBR(say, 40));
+            imGui.inputText("", out);
+            if (imGui.button("提 交")) {
+                return out.toString();
+            }
+            imGui.sameLine();
+
+            imGui.render();
+        }
+        return out.toString();
     }
     public static String AutoBR(String text,int line_size){
         String[] t = text.split("");
@@ -239,5 +369,21 @@ public class Main {
             rt.append(string);
         }
         return rt.toString();
+    }
+    public static long calculateDirectorySize(File directory) {
+        long size = 0;
+        if (directory.isDirectory()) {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isFile()) {
+                        size += file.length();
+                    } else {
+                        size += calculateDirectorySize(file); // 递归处理子目录
+                    }
+                }
+            }
+        }
+        return size;
     }
 }

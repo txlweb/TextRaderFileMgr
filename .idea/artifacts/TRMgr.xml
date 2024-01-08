@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="TRMgr">
+    <output-path>$PROJECT_DIR$/out/artifacts/TRMgr</output-path>
+    <root id="archive" name="TRMgr.jar">
+      <element id="module-output" name="TextMgr" />
+      <element id="library" level="project" name="epublib-core-4.0-complete" />
+      <element id="library" level="project" name="ice1000.jimgui.core" />
+      <element id="file-copy" path="$PROJECT_DIR$/font/msyh.ttc" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />
+      </element>
+    </root>
+  </artifact>
+</component>
