@@ -9,6 +9,7 @@
       <element id="directory" name="META-INF">
         <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />
       </element>
+      <element id="library" level="module" name="JUnit4" module-name="TextMgr" />
     </root>
   </artifact>
 </component>

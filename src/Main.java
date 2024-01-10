@@ -53,6 +53,7 @@ public class Main {
         //配置窗口可视情况
         boolean TRMGR = true;
         boolean TRCOF = true;
+        boolean BGCR = false;
         NativeBool nb = new NativeBool();
         NativeBool nb1 = new NativeBool();
         nb.modifyValue(true);
@@ -110,11 +111,24 @@ public class Main {
                 if(imGui.button("关于")) {
                     if(!Window_y_n(imGui, "关于 - TextReader Config tool", "Vre. Beta 1.3.0-2091b-240108\r\n  这是一款由IDlike自主研发的小说阅读器,本程序为书籍管\r\n理工具,本程序仅供学习参考,不可商用!\r\n                 IDSOFT @ IDlike 2024/1/8"))
                         while(!Window_y_n(imGui, "[悲]", "作者会掉小珍珠的 嘤嘤嘤..."));
-
                 }
+                if(!BGCR){
+                    if(imGui.button("背景透明(可能有bug)")){
+                        Runtime.getRuntime().exec("./bgcr.exe");
+                        BGCR=true;
+                    }
+                }else {
+                    if(imGui.button("重启程序")){
+                        JImGui.closeCurrentPopup();
+                        start_window();
+                        BGCR=false;
+                    }
+                }
+
                 if(imGui.button("退出程序")){
                     return;
                 }
+
                 JImGuiGen.endMenu();
             }
             JImGui.endMenuBar();
