@@ -13,7 +13,7 @@ import java.util.Objects;
 
 public class Main {
     public static void start_window() throws IOException {
-
+        //System.out.println(TextReaderLibVc.IsEpubFile("bgcr.exe"));
         JniLoader.load();
         JImGui imGui = new JImGui("T-R-Mgr");
 
@@ -54,6 +54,7 @@ public class Main {
         boolean TRMGR = true;
         boolean TRCOF = true;
         boolean BGCR = false;
+        boolean Re_load = false;
         NativeBool nb = new NativeBool();
         NativeBool nb1 = new NativeBool();
         nb.modifyValue(true);
@@ -61,6 +62,9 @@ public class Main {
 
         File directory = new File(Config_dirs.MainPath);
         long directorySize = calculateDirectorySize(directory);
+
+
+        NativeInt V_c_c = new NativeInt();
 
         while (!imGui.windowShouldClose()){
             imGui.initNewFrame();
@@ -78,7 +82,7 @@ public class Main {
                         else
                             TeipMake.Unzip(fn,Config_dirs.MainPath);
                     }
-
+                    s = PathScanLib.PathScan(true, String.valueOf(out));
                 }
                 if(imGui.button("导入txt")){
                     String fn = Window_Select_Things(imGui,"选择文件 - 导入txt文件");
@@ -92,7 +96,7 @@ public class Main {
                             Window_Input(imGui,"输入信息","请输入小说简介","测试简介"));
                     TeipMake.Unzip("tmp.zip",Config_dirs.MainPath);
                     Window_y_n(imGui, "完成.", "小说已经成功导入.");
-
+                    s = PathScanLib.PathScan(true, String.valueOf(out));
                 }
                 JImGuiGen.endMenu();
             }
@@ -109,8 +113,8 @@ public class Main {
             }
             if(imGui.beginMenu("杂项",true)){
                 if(imGui.button("关于")) {
-                    if(!Window_y_n(imGui, "关于 - TextReader Config tool", "Vre. Beta 1.3.0-2091b-240108\r\n  这是一款由IDlike自主研发的小说阅读器,本程序为书籍管\r\n理工具,本程序仅供学习参考,不可商用!\r\n                 IDSOFT @ IDlike 2024/1/8"))
-                        while(!Window_y_n(imGui, "[悲]", "作者会掉小珍珠的 嘤嘤嘤..."));
+                    Window_y_n(imGui, "关于 - TextReader Config tool", "Vre. Beta 1.3.1-2100b-240112\r\n  这是一款由IDlike自主研发的小说阅读器,本程序为书籍管\r\n理工具,本程序仅供学习参考,不可商用!\r\n\r\n作者B站UID:694692509                 IDSOFT @ IDlike 2024/1/8");
+                        //Window_y_n(imGui, "[悲]", "作者会掉小珍珠的 嘤嘤嘤...");
                 }
                 if(!BGCR){
                     if(imGui.button("背景透明(可能有bug)")){
@@ -118,11 +122,14 @@ public class Main {
                         BGCR=true;
                     }
                 }else {
-                    if(imGui.button("重启程序")){
-                        JImGui.closeCurrentPopup();
-                        start_window();
-                        BGCR=false;
-                    }
+//                    if(imGui.button("重启程序")){
+//
+//                        //Boot.main(null);
+//                        //BGCR=false;
+//                        Re_load = true;
+//                        break;
+//                        //return;
+//                    }
                 }
 
                 if(imGui.button("退出程序")){
@@ -137,6 +144,9 @@ public class Main {
                     imGui.setWindowSize("TextReader File Manager",700,600);
                     if(!nb.accessValue()) TRMGR=false;
                     imGui.text("");
+                    if (imGui.button("重载小说索引")) {
+                        s = PathScanLib.PathScan(true, "");
+                    }
                     imGui.text("搜索小说(标题/作者/简介)");
                     imGui.text("搜索:");
                     imGui.sameLine();
@@ -158,8 +168,9 @@ public class Main {
                         imGui.sameLine(45f);
                         if (imGui.button("删除     " + i, 38f, 22f)) {
                             System.out.println("删除#" + i);
-                            if (Window_y_n(imGui, "删除确认", "你是否真的要删除这个小说<" + s.get(i).get(1) + ">\r\n这个操作不能恢复,请谨慎操作!"))
-                                IniLib.deleteFileByIO(Config_dirs.MainPath + "/" + s.get(i).get(0));
+                            if(s.get(i).get(1)!="无效的EPUB文件,建议清理!")
+                                if (Window_y_n(imGui, "删除确认", "你是否真的要删除这个小说<" + s.get(i).get(1) + ">\r\n这个操作不能恢复,请谨慎操作!"))
+                                    IniLib.deleteFileByIO(Config_dirs.MainPath + "/" + s.get(i).get(0));
 
                             //刷新内容
                             s = PathScanLib.PathScan(true, "");
@@ -258,15 +269,27 @@ public class Main {
                     JImGuiGen.endTabBar();
                 }
             }
-            if (imGui.begin("TextReader Storage Manager")) {
+            if (imGui.begin("Program controller")) {
                 imGui.text("小说占用空间: "+new DecimalFormat("#.00").format((float)((int) (directorySize))/1024/1024)+"MB");
                 imGui.sameLine();
                 if(imGui.button("刷新")) directorySize = calculateDirectorySize(directory);
-                imGui.setWindowSize("TextReader Storage Manager", 300, 70);
-                imGui.setWindowPos("TextReader Storage Manager",0,32);
+                //显示切换主题
+                imGui.text("0=Dark; 1=Light; 2=Classic");
+                imGui.sliderInt("主题", V_c_c, 0, 2);
+                imGui.setWindowSize("Program controller", 300, 120);
+                imGui.setWindowPos("Program controller",0,32);
             }
-
+            if(V_c_c.intValue()==0) imGui.styleColorsDark();
+            if(V_c_c.intValue()==1) imGui.styleColorsLight();
+            if(V_c_c.intValue()==2) imGui.styleColorsClassic();
             imGui.render();
+        }
+        System.out.println("Window is closed.");
+        if(Re_load){
+            imGui.render();
+            imGui.close();
+
+            Boot.main(null);
         }
     }
     public static void NS_add_string(NativeString ns,String text){

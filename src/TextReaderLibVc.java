@@ -1,4 +1,3 @@
-
 import nl.siegmann.epublib.domain.*;
 import nl.siegmann.epublib.epub.EpubReader;
 
@@ -19,7 +18,14 @@ public class TextReaderLibVc {
     public static String GetMainText_C(String name, int id) {
         return GetPage(name, String.valueOf(id));
     }
-
+    public static boolean IsEpubFile(String FileName){
+        try {
+            new EpubReader().readEpub(new FileInputStream(FileName));
+        } catch (IOException e) {
+            return false;
+        }
+        return true;
+    }
     public static String GetList(String FileName) {
         //FileName = Config_dirs.MainPath+"/"+FileName+"/main.epub";
         try {

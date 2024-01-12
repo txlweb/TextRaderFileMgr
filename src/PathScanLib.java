@@ -25,7 +25,7 @@ public class PathScanLib {
                                         a.add("UNKNOW");
                                         a.add("UNKNOW");
                                         Bi.add(a);
-                                    }else {
+                                    }else if(TextReaderLibVc.IsEpubFile(MainPath + "/" + value.getName() + "/main.epub")){
                                         a.add(value.getName());
                                         a.add(TextReaderLibVc.GetName(MainPath + "/" + value.getName() + "/main.epub"));
                                         a.add("icon.jpg");
@@ -34,6 +34,13 @@ public class PathScanLib {
                                             a.add(TextReaderLibVc.GetInfo(MainPath + "/" + value.getName() + "/main.epub").split("\"")[11]);
                                         else
                                             a.add("UNKNOW");
+                                        Bi.add(a);
+                                    }else{
+                                        a.add(value.getName());
+                                        a.add("无效的EPUB文件,建议清理!");
+                                        a.add("icon.jpg");
+                                        a.add("无效的EPUB文件,建议清理!");
+                                        a.add("无效的EPUB文件,建议清理!这会导致意料之外的报错或无法打开网页().");
                                         Bi.add(a);
                                     }
                                 }
