@@ -1,15 +1,18 @@
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.ice1000.jimgui.*;
 import org.ice1000.jimgui.flag.JImWindowFlags;
 import org.ice1000.jimgui.util.JniLoader;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
+//firstbird.backbone.gson_2.11 (gson-2.8.5.jar
 
 public class Main {
     public static void start_window() throws IOException {
@@ -56,12 +59,18 @@ public class Main {
         boolean TRMGR = true;
         boolean TRCOF = true;
         boolean BGCR = false;
+        boolean CFGS = true;
         boolean Re_load = false;
         NativeBool nb = new NativeBool();
         NativeBool nb1 = new NativeBool();
+        NativeBool nb2 = new NativeBool();
         nb.modifyValue(true);
         nb1.modifyValue(true);
-
+        nb2.modifyValue(true);
+        JsonParser jp_apis = new JsonParser();
+        JsonObject json_apis = (JsonObject) jp_apis.parse(new FileReader("./style/API_list.json"));
+        JsonParser jp_confs = new JsonParser();
+        JsonObject json_confs = (JsonObject) jp_confs.parse(new FileReader("./style/config.json"));
         File directory = new File(Config_dirs.MainPath);
         long directorySize = calculateDirectorySize(directory);
 
@@ -124,6 +133,10 @@ public class Main {
                     TRCOF=true;
                     nb1.modifyValue(true);
                 }
+                if(imGui.button("json配置")){
+                    CFGS=true;
+                    nb2.modifyValue(true);
+                }
                 JImGuiGen.endMenu();
             }
             if(imGui.beginMenu("杂项",true)){
@@ -154,6 +167,70 @@ public class Main {
                 JImGuiGen.endMenu();
             }
             JImGui.endMenuBar();
+            if(CFGS){
+                if (imGui.begin("TextReader Json Config Manager",nb2)) {
+                    if(!nb2.accessValue()) CFGS=false;
+                    if (imGui.beginTabBar("MainBar1")) {
+                        if (imGui.beginTabItem("设置")) {
+                            if(imGui.button("+ [增加快捷关键词]")){
+                                JsonParser tjp = new JsonParser();
+                                JsonObject tjsp = (JsonObject) jp_apis.parse("{}");
+                                tjsp.addProperty("name", Window_input(imGui,"请输入标题","请输入标题"));
+                                tjsp.addProperty("key", Window_input(imGui,"请输入搜索值","请输入搜索值"));
+                                json_confs.get("conf_tags").getAsJsonArray().add(tjsp);
+                                TeipMake.WriteFileToThis("./style/config.json",json_confs.toString());
+                            }
+                            for (int i = 0; i < json_confs.get("conf_tags").getAsJsonArray().size(); i++) {
+                                imGui.text("显示标题: "+json_confs.get("conf_tags").getAsJsonArray().get(i).getAsJsonObject().get("name").getAsString());
+                                imGui.text("搜索内容: "+json_confs.get("conf_tags").getAsJsonArray().get(i).getAsJsonObject().get("key").getAsString());
+                                if(imGui.button("- [删除#"+i+"]")){
+                                    json_confs.get("conf_tags").getAsJsonArray().remove(i);
+                                    TeipMake.WriteFileToThis("./style/config.json",json_confs.toString());
+                                }
+                                imGui.sameLine(45f);
+                                imGui.text("");
+                            }
+                            imGui.text("");
+                            imGui.text("AI朗读设置");
+                            imGui.sameLine();
+                            if(imGui.button("更改")){
+                                json_confs.get("conf_AI").getAsJsonObject().addProperty("API_URL_L",Window_input_(imGui,"API前段(文本前):","API前段(文本前):","http://127.0.0.1:7880/api/tts?speaker=[讲述人]&text="));
+                                json_confs.get("conf_AI").getAsJsonObject().addProperty("API_URL_R",Window_input_(imGui,"API后段(文本后):","API后段(文本后):","&format=wav&language=auto&length=1&sdp=0.2&noise=0.6&noisew=0.8&emotion=7&seed=107000"));
+                                TeipMake.WriteFileToThis("./style/config.json",json_confs.toString());
+                            }
+                            imGui.text("L: "+json_confs.get("conf_AI").getAsJsonObject().get("API_URL_L").getAsString());
+                            imGui.text("R: "+json_confs.get("conf_AI").getAsJsonObject().get("API_URL_R").getAsString());
+                            imGui.text("[这些条目都是实时保存的!]");
+                            JImGuiGen.endTabItem();
+                        }
+                        if (imGui.beginTabItem("在线获取小说API")) {
+                            if(imGui.button("+ [增加API]")){
+                                JsonParser tjp = new JsonParser();
+                                JsonObject tjsp = (JsonObject) jp_apis.parse("{}");
+                                tjsp.addProperty("tell", Window_input(imGui,"请输入API名字","请输入API名字"));
+                                tjsp.addProperty("host", Window_input(imGui,"请输入API网络URL","请输入API网络URL"));
+                                tjsp.addProperty("icon", "host.ico");
+                                json_apis.get("data").getAsJsonArray().add(tjsp);
+                                TeipMake.WriteFileToThis("./style/API_list.json",json_apis.toString());
+                            }
+                            for (int i = 0; i < json_apis.get("data").getAsJsonArray().size(); i++) {
+                                imGui.text("Name: "+json_apis.get("data").getAsJsonArray().get(i).getAsJsonObject().get("tell").getAsString());
+                                imGui.text("Host: "+json_apis.get("data").getAsJsonArray().get(i).getAsJsonObject().get("host").getAsString());
+                                imGui.text("Icon: "+json_apis.get("data").getAsJsonArray().get(i).getAsJsonObject().get("icon").getAsString());
+                                if(imGui.button("- [删除#"+i+"]")){
+                                    json_apis.get("data").getAsJsonArray().remove(i);
+                                    TeipMake.WriteFileToThis("./style/API_list.json",json_apis.toString());
+                                }
+                                imGui.sameLine(45f);
+                                imGui.text("");
+                            }
+                            imGui.text("[这些条目都是实时保存的!]");
+                            JImGuiGen.endTabItem();
+                        }
+                    }
+                    JImGuiGen.endTabBar();
+                }
+            }
             if(TRMGR) {
                 if (imGui.begin("TextReader File Manager",nb)) {
                     imGui.setWindowSize("TextReader File Manager",700,600);
@@ -401,6 +478,46 @@ public class Main {
             imGui.render();
         }
         return false;
+    }
+
+public static String Window_input(JImGui imGui,String Title,String say){
+    NativeString out = new NativeString();
+        while (!imGui.windowShouldClose()) {
+            imGui.initNewFrame();
+            imGui.begin(Title,new NativeBool(), JImWindowFlags.NoTitleBar);
+            imGui.setWindowSize(Title,400,300);
+            imGui.text(Title);
+            imGui.text("");
+            imGui.text(say);
+            imGui.inputText("in",out);
+            imGui.sameLine();
+            if (imGui.button("提交")) {
+                return out.toString();
+            }
+
+            imGui.render();
+        }
+        return "";
+    }
+    public static String Window_input_(JImGui imGui,String Title,String say,String auto){
+        NativeString out = new NativeString();
+        NS_add_string(out,auto);
+        while (!imGui.windowShouldClose()) {
+            imGui.initNewFrame();
+            imGui.begin(Title,new NativeBool(), JImWindowFlags.NoTitleBar);
+            imGui.setWindowSize(Title,400,300);
+            imGui.text(Title);
+            imGui.text("");
+            imGui.text(say);
+            imGui.inputText("in",out);
+            imGui.sameLine();
+            if (imGui.button("提交")) {
+                return out.toString();
+            }
+
+            imGui.render();
+        }
+        return "";
     }
     public static String Window_Input(JImGui imGui,String Title,String say,String auto_thing){
         NativeString out = new NativeString();

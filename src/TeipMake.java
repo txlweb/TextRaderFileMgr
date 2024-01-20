@@ -251,10 +251,11 @@ public class TeipMake {
             } else {
                 file.createNewFile();
             }
-            FileWriter fileWriter = new FileWriter(file.getName(), true);
+            FileWriter fileWriter = new FileWriter(file_name, true);
             BufferedWriter bufferWriter = new BufferedWriter(fileWriter);
             bufferWriter.write(data);
             bufferWriter.close();
+
             System.out.println("Done");
         } catch (IOException e) {
             e.printStackTrace();
