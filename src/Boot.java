@@ -7,7 +7,6 @@ import java.util.Objects;
 public class Boot {
     public static void main(String[] args) throws IOException {
         System.setProperty("file.encoding", "UTF-8");
-        System.out.println("Hello world!");
         //导出库文件  ./annotations-20.1.0.jar ./core-v0.22.0.jar
         if (Main.class.getClassLoader().getResource("epublib-core-4.0-complete.jar") != null) {
             InputStream in = Objects.requireNonNull(Main.class.getClassLoader().getResource("epublib-core-4.0-complete.jar")).openStream();

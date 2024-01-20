@@ -20,7 +20,7 @@ public class Main {
         JImGuiIO imGio = imGui.getIO();
         //导出字库
 
-        if (Main.class.getClassLoader().getResource("msyh.ttc") != null)
+        if (Main.class.getClassLoader().getResource("msyh.ttc") != null || new File("./msyh.ttc").isFile())
             imGio.getFonts().addFontFromFile("./msyh.ttc",20.0f,new JImFontConfig(),imGio.getFonts().getGlyphRangesForChineseFull());
         else//测试环境用的
             imGio.getFonts().addFontFromFile("./font/msyh.ttc",20.0f,new JImFontConfig(),imGio.getFonts().getGlyphRangesForChineseFull());
@@ -38,6 +38,7 @@ public class Main {
         NativeString V_m_m = new NativeString();
         NativeInt V_m_l = new NativeInt();
         NativeBool V_m_s = new NativeBool();
+        NativeBool V_m_f = new NativeBool();
         NativeString V_s_p = new NativeString();
         NativeString V_s_m = new NativeString();
         NativeInt V_s_l = new NativeInt();
@@ -46,6 +47,7 @@ public class Main {
         NS_add_string(V_m_p, String.valueOf(Config_dirs.NormPort));
         NS_add_string(V_m_m, String.valueOf(Config_dirs.MainPath));
         V_m_s.modifyValue(Config_dirs.Use_Share);
+        V_m_f.modifyValue(Config_dirs.Fire_Wall);
         V_m_l.modifyValue(1);
         Config_dirs_b.init_configs();
         NS_add_string(V_s_p, String.valueOf(Config_dirs_b.NormPort));
@@ -72,31 +74,44 @@ public class Main {
             if(imGui.beginMenu("文件",true)){
                 if(imGui.button("导入teip/epub")) {
                     String fn = Window_Select_Things(imGui,"选择文件 - 导入teip或epub文件");
-                    if(Objects.equals(fn, "epub")){
-                        TeipMake.EpubMake(fn);
-                    } else if (Objects.equals(fn, "teip")) {
-                        TeipMake.Unzip(fn,Config_dirs.MainPath);
-                    }else {
-                        if (Window_y_n(imGui, "选择文件类型", "我们不能准确分别这个文件的类型,请选择\r\n   是钮为epub文件   否钮 为teip文件\r\n 如果您导入的epub文件并不可读,会导致程序闪退,请删除它再启动程序."))
+                    if(!fn.isEmpty()) {
+                        if (Objects.equals(fn, "epub")) {
                             TeipMake.EpubMake(fn);
-                        else
-                            TeipMake.Unzip(fn,Config_dirs.MainPath);
+                        } else if (Objects.equals(fn, "teip")) {
+                            TeipMake.Unzip(fn, Config_dirs.MainPath);
+                        } else {
+                            if (Window_y_n(imGui, "选择文件类型", "我们不能准确分别这个文件的类型,请选择\r\n   是钮为epub文件   否钮 为teip文件\r\n 如果您导入的epub文件并不可读,会导致程序闪退,请删除它再启动程序."))
+                                TeipMake.EpubMake(fn);
+                            else
+                                TeipMake.Unzip(fn, Config_dirs.MainPath);
+                        }
                     }
                     s = PathScanLib.PathScan(true, String.valueOf(out));
                 }
                 if(imGui.button("导入txt")){
                     String fn = Window_Select_Things(imGui,"选择文件 - 导入txt文件");
-                    String fn1 = Window_Select_Things(imGui,"选择文件 - 导入图标(jpg)文件");
-                    TeipMake.autoMake(fn,
-                            "tmp.zip",
-                            Window_Input(imGui,"输入信息","请输入小说标题","测试小说Vb"),
-                            fn1,
-                            Window_Input(imGui,"输入信息","请输入小说切章规则(不用动)",".*第.*章.*"),
-                            Window_Input(imGui,"输入信息","请输入小说作者","测试作者"),
-                            Window_Input(imGui,"输入信息","请输入小说简介","测试简介"));
-                    TeipMake.Unzip("tmp.zip",Config_dirs.MainPath);
-                    Window_y_n(imGui, "完成.", "小说已经成功导入.");
+                    if(!fn.isEmpty()) {
+                        String fn1 = Window_Select_Things(imGui, "选择文件 - 导入图标(jpg)文件");
+                        if (!fn1.isEmpty()) {
+                            TeipMake.autoMake(fn,
+                                    "tmp.zip",
+                                    Window_Input(imGui, "输入信息", "请输入小说标题", "测试小说Vb"),
+                                    fn1,
+                                    Window_Input(imGui, "输入信息", "请输入小说切章规则(不用动)", ".*第.*章.*"),
+                                    Window_Input(imGui, "输入信息", "请输入小说作者", "测试作者"),
+                                    Window_Input(imGui, "输入信息", "请输入小说简介", "测试简介"));
+                            TeipMake.Unzip("tmp.zip", Config_dirs.MainPath);
+                            Window_y_n(imGui, "完成.", "小说已经成功导入.");
+                        }
+                    }
                     s = PathScanLib.PathScan(true, String.valueOf(out));
+                }
+                if(imGui.button("txt去空行")) {
+                    if(tools.TextClearNullLine(Window_Select_Things(imGui,"选择文件 - 处理txt文件空行"))){
+                        Window_y_n(imGui, "完成.", "小说已去空行");
+                    }else {
+                        Window_y_n(imGui, "失败.", "!! 这个小说不能被打开 !!");
+                    }
                 }
                 JImGuiGen.endMenu();
             }
@@ -113,7 +128,7 @@ public class Main {
             }
             if(imGui.beginMenu("杂项",true)){
                 if(imGui.button("关于")) {
-                    Window_y_n(imGui, "关于 - TextReader Config tool", "Vre. Beta 1.3.1-2100b-240112\r\n  这是一款由IDlike自主研发的小说阅读器,本程序为书籍管\r\n理工具,本程序仅供学习参考,不可商用!\r\n\r\n作者B站UID:694692509                 IDSOFT @ IDlike 2024/1/8");
+                    Window_y_n(imGui, "关于 - TextReader Config tool", "Vre. Beta 1.3.2-2190b-240115\r\n  这是一款由IDlike自主研发的小说阅读器,本程序为书籍管\r\n理工具,本程序仅供学习参考,不可商用!\r\n\r\n作者B站UID:694692509                 \r\nIDSOFT @ IDlike 2024/1/8");
                         //Window_y_n(imGui, "[悲]", "作者会掉小珍珠的 嘤嘤嘤...");
                 }
                 if(!BGCR){
@@ -231,6 +246,11 @@ public class Main {
                                     Window_y_n(imGui, "作者建议", "这个功能不建议关闭,但是您的网络环境如果比较复杂还请必须关闭!");
                                 }
                             }
+                            if (imGui.checkbox("IFireWall防火墙", V_m_f)) {
+                                if (!V_m_s.accessValue()) {
+                                    Window_y_n(imGui, "作者建议", "这个功能不建议关闭,如果需要外部访问的话则必须打开,否则他们不能访问!");
+                                }
+                            }
                             if (imGui.button("保存配置文件")) {
                                 IniLib.SetThing("./config.ini", "settings", "MainPath", V_m_m.toString());
                                 IniLib.SetThing("./config.ini", "settings", "Port", V_m_p.toString());
@@ -239,6 +259,11 @@ public class Main {
                                     IniLib.SetThing("./config.ini", "settings", "UseShare", "enable");
                                 } else {
                                     IniLib.SetThing("./config.ini", "settings", "UseShare", "disable");
+                                }
+                                if (V_m_f.accessValue()) {
+                                    IniLib.SetThing("./config.ini", "settings", "FireWall", "enable");
+                                } else {
+                                    IniLib.SetThing("./config.ini", "settings", "FireWall", "disable");
                                 }
                             }
                             JImGuiGen.endTabItem();
@@ -348,6 +373,10 @@ public class Main {
                 if(imGui.button("[File] "+p.get(1).get(i))){
                     return pa+"/"+p.get(1).get(i);
                 }
+            }
+            imGui.begin("",new NativeBool(), JImWindowFlags.NoResize);
+            if(imGui.button("取消选择文件")) {
+                return "";
             }
             imGui.render();
         }
