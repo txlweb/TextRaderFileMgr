@@ -32,6 +32,14 @@ public class Boot {
                 while ((byteread = in.read(bytes)) != -1) ot.write(bytes, 0, byteread);
             }
         }
+        if (Main.class.getClassLoader().getResource("gson-2.10.1.jar") != null) {
+            InputStream in = Objects.requireNonNull(Main.class.getClassLoader().getResource("core-v0.22.0.jar")).openStream();
+            try (OutputStream ot = new FileOutputStream("./gson-2.10.1.jar")) {
+                byte[] bytes = new byte[1024];
+                int byteread;
+                while ((byteread = in.read(bytes)) != -1) ot.write(bytes, 0, byteread);
+            }
+        }
         if (Main.class.getClassLoader().getResource("msyh.ttc") != null) {
             InputStream in = Objects.requireNonNull(Main.class.getClassLoader().getResource("msyh.ttc")).openStream();
             try (OutputStream ot = new FileOutputStream("./msyh.ttc")) {

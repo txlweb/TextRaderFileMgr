@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-//firstbird.backbone.gson_2.11 (gson-2.8.5.jar
+
 
 public class Main {
     public static void start_window() throws IOException {
