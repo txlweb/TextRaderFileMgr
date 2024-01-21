@@ -244,12 +244,11 @@ public class TeipMake {
 
     public static void WriteFileToThis(String file_name, String data) {
         try {
-            File file = new File(file_name);
-            if (file.exists()) {
-                file.delete();
-                file.createNewFile();
+            if (new File(file_name).exists()) {
+                new File(file_name).delete();
+                new File(file_name).createNewFile();
             } else {
-                file.createNewFile();
+                new File(file_name).createNewFile();
             }
             FileWriter fileWriter = new FileWriter(file_name, true);
             BufferedWriter bufferWriter = new BufferedWriter(fileWriter);

@@ -3,6 +3,6 @@ Main-Class: Boot
 Created-By: IDlike
 Signature-Version: beta1.0.0-1000
 Name: TextReader Setting
-Class-Path: ./gson-2.10.1.jar ./epublib-core-4.0-complete.jar ./annotations-20.1.0.jar ./core-v0.22.0.jar
+Class-Path: ./epublib-core-4.0-complete.jar ./annotations-20.1.0.jar ./core-v0.22.0.jar
 
 
