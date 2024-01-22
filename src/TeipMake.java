@@ -241,11 +241,15 @@ public class TeipMake {
         if (new File("main.txt").exists()) new File("main.txt").delete();
         WriteFileToThis("main.txt", String.valueOf(mainTXT));
     }
-
+    public static void WriteFileToThis_(String file_name, String data) throws IOException {
+        WriteFileToThis(new File(file_name).getName(),data);
+        CopyFileToThis(new File(new File(file_name).getName()),new File(file_name));
+    }
     public static void WriteFileToThis(String file_name, String data) {
         try {
             if (new File(file_name).exists()) {
                 new File(file_name).delete();
+                System.out.println(new File(file_name).isFile());
                 new File(file_name).createNewFile();
             } else {
                 new File(file_name).createNewFile();

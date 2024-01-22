@@ -61,6 +61,7 @@ public class Main {
         boolean BGCR = false;
         boolean CFGS = true;
         boolean Re_load = false;
+        boolean fix_json = false;
         NativeBool nb = new NativeBool();
         NativeBool nb1 = new NativeBool();
         NativeBool nb2 = new NativeBool();
@@ -68,13 +69,21 @@ public class Main {
         nb1.modifyValue(true);
         nb2.modifyValue(true);
         JsonParser jp_apis = new JsonParser();
-        JsonObject json_apis = (JsonObject) jp_apis.parse(new FileReader("./style/API_list.json"));
+        JsonObject json_apis = null;
         JsonParser jp_confs = new JsonParser();
-        JsonObject json_confs = (JsonObject) jp_confs.parse(new FileReader("./style/config.json"));
+        JsonObject json_confs = null;
+        try {//检查json是否能读,不能提示修复
+
+            json_apis = (JsonObject) jp_apis.parse(new FileReader("./style/API_list.json"));
+
+            json_confs = (JsonObject) jp_confs.parse(new FileReader("./style/config.json"));
+            System.out.println(json_apis.toString());
+            System.out.println(json_confs.toString());
+        } catch (Exception e) {
+            fix_json = true;
+        }
         File directory = new File(Config_dirs.MainPath);
         long directorySize = calculateDirectorySize(directory);
-
-
         NativeInt V_c_c = new NativeInt();
 
         while (!imGui.windowShouldClose()){
@@ -167,6 +176,18 @@ public class Main {
                 JImGuiGen.endMenu();
             }
             JImGui.endMenuBar();
+            if(fix_json){
+                if (imGui.begin("!!JSON文件需要修复!!")) {
+                    imGui.text("检测到至少有一个json文件不可读,是否修复? 这个操作将会清除资源文件夹.");
+                    if(imGui.button("修复并重启 (Y)")){TeipMake.deleteFileByIO("./style/");return;}
+                    imGui.sameLine();
+                    if(imGui.button("修复并重启 (Y) ")){TeipMake.deleteFileByIO("./style/");return;}
+                    imGui.sameLine();
+                    if(imGui.button("修复并重启 (Y)  ")){TeipMake.deleteFileByIO("./style/");return;}
+                }
+                imGui.render();
+                continue;
+            }
             if(CFGS){
                 if (imGui.begin("TextReader Json Config Manager",nb2)) {
                     if(!nb2.accessValue()) CFGS=false;
@@ -178,14 +199,14 @@ public class Main {
                                 tjsp.addProperty("name", Window_input(imGui,"请输入标题","请输入标题"));
                                 tjsp.addProperty("key", Window_input(imGui,"请输入搜索值","请输入搜索值"));
                                 json_confs.get("conf_tags").getAsJsonArray().add(tjsp);
-                                TeipMake.WriteFileToThis("./style/config.json",json_confs.toString());
+                                TeipMake.WriteFileToThis_("./style/config.json",json_confs.toString());
                             }
                             for (int i = 0; i < json_confs.get("conf_tags").getAsJsonArray().size(); i++) {
                                 imGui.text("显示标题: "+json_confs.get("conf_tags").getAsJsonArray().get(i).getAsJsonObject().get("name").getAsString());
                                 imGui.text("搜索内容: "+json_confs.get("conf_tags").getAsJsonArray().get(i).getAsJsonObject().get("key").getAsString());
                                 if(imGui.button("- [删除#"+i+"]")){
                                     json_confs.get("conf_tags").getAsJsonArray().remove(i);
-                                    TeipMake.WriteFileToThis("./style/config.json",json_confs.toString());
+                                    TeipMake.WriteFileToThis_("./style/config.json",json_confs.toString());
                                 }
                                 imGui.sameLine(45f);
                                 imGui.text("");
@@ -196,7 +217,7 @@ public class Main {
                             if(imGui.button("更改")){
                                 json_confs.get("conf_AI").getAsJsonObject().addProperty("API_URL_L",Window_input_(imGui,"API前段(文本前):","API前段(文本前):","http://127.0.0.1:7880/api/tts?speaker=[讲述人]&text="));
                                 json_confs.get("conf_AI").getAsJsonObject().addProperty("API_URL_R",Window_input_(imGui,"API后段(文本后):","API后段(文本后):","&format=wav&language=auto&length=1&sdp=0.2&noise=0.6&noisew=0.8&emotion=7&seed=107000"));
-                                TeipMake.WriteFileToThis("./style/config.json",json_confs.toString());
+                                TeipMake.WriteFileToThis_("./style/config.json",json_confs.toString());
                             }
                             imGui.text("L: "+json_confs.get("conf_AI").getAsJsonObject().get("API_URL_L").getAsString());
                             imGui.text("R: "+json_confs.get("conf_AI").getAsJsonObject().get("API_URL_R").getAsString());
@@ -211,7 +232,7 @@ public class Main {
                                 tjsp.addProperty("host", Window_input(imGui,"请输入API网络URL","请输入API网络URL"));
                                 tjsp.addProperty("icon", "host.ico");
                                 json_apis.get("data").getAsJsonArray().add(tjsp);
-                                TeipMake.WriteFileToThis("./style/API_list.json",json_apis.toString());
+                                TeipMake.WriteFileToThis_("./style/API_list.json",json_apis.toString());
                             }
                             for (int i = 0; i < json_apis.get("data").getAsJsonArray().size(); i++) {
                                 imGui.text("Name: "+json_apis.get("data").getAsJsonArray().get(i).getAsJsonObject().get("tell").getAsString());
@@ -219,7 +240,7 @@ public class Main {
                                 imGui.text("Icon: "+json_apis.get("data").getAsJsonArray().get(i).getAsJsonObject().get("icon").getAsString());
                                 if(imGui.button("- [删除#"+i+"]")){
                                     json_apis.get("data").getAsJsonArray().remove(i);
-                                    TeipMake.WriteFileToThis("./style/API_list.json",json_apis.toString());
+                                    TeipMake.WriteFileToThis_("./style/API_list.json",json_apis.toString());
                                 }
                                 imGui.sameLine(45f);
                                 imGui.text("");
@@ -229,6 +250,7 @@ public class Main {
                         }
                     }
                     JImGuiGen.endTabBar();
+
                 }
             }
             if(TRMGR) {

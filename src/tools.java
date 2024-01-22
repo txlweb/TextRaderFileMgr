@@ -1,9 +1,10 @@
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
 public class tools {
-    public static boolean TextClearNullLine(String file){
+    public static boolean TextClearNullLine(String file) throws IOException {
 
         if(!new File(file).isFile()){
             System.out.println("E: 打不开文件");

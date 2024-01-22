@@ -40,6 +40,10 @@ public class Boot {
                 while ((byteread = in.read(bytes)) != -1) ot.write(bytes, 0, byteread);
             }
         }
+
+
+
+
         Main.start_window();
     }
 }
