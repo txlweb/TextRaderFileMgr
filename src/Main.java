@@ -86,6 +86,10 @@ public class Main {
         long directorySize = calculateDirectorySize(directory);
         NativeInt V_c_c = new NativeInt();
 
+        //加载贴图
+
+        //@NotNull JImTextureID teip_file = JImTextureID.fromFile("favicon.png");
+        //System.out.println(teip_file.width);
         while (!imGui.windowShouldClose()){
             imGui.initNewFrame();
             JImGui.beginMainMenuBar();
@@ -130,6 +134,9 @@ public class Main {
                     }else {
                         Window_y_n(imGui, "失败.", "!! 这个小说不能被打开 !!");
                     }
+                }
+                if(imGui.button("编制Encode索引(可以提速)")) {
+                    TeipMake.make_encode_table(Config_dirs.MainPath);
                 }
                 JImGuiGen.endMenu();
             }
@@ -256,6 +263,8 @@ public class Main {
             if(TRMGR) {
                 if (imGui.begin("TextReader File Manager",nb)) {
                     imGui.setWindowSize("TextReader File Manager",700,600);
+
+                    //imGui.image(teip_file);
                     if(!nb.accessValue()) TRMGR=false;
                     imGui.text("");
                     if (imGui.button("重载小说索引")) {
@@ -310,7 +319,58 @@ public class Main {
                     }//格式化目录
                 }
             }
+            if(imGui.begin("TextReader Plugins Manager")) {
+                imGui.setWindowSize("TextReader Plugins Manager",300,350);
+                if(imGui.button("打开插件文件夹")){
+                    Runtime.getRuntime().exec("cmd /c start explorer \""+System.getProperty("user.dir")+"\\plugin\\\"");
+                    System.out.println(System.getProperty("user.dir"));
+                }
+                if(imGui.button("在GitHub上查看插件库")){
 
+                }
+                File file = new File("./plugin/");
+                if (file.isDirectory()) {
+                    File[] files = file.listFiles();
+                    if (files != null) {
+                        for (File value : files) {
+                            boolean b1 = true, b2 = true, b3 = false;
+                            String name = "", by = "";
+                            if (value.isFile() && !value.getPath().contains(".encode") & value.getPath().contains(".plugin") || value.getPath().contains(".nop") ) {
+                                List<String> Plugin_ = IniLib.ReadCFGFile(value.getPath());// 读列表
+                                for (String string : Plugin_) {
+                                    if (string.contains("NAME") & b1) {
+                                        name = string;
+                                        b1 = false;
+                                    }
+                                    if (string.contains("BY") & b2) {
+                                        by = string;
+                                        b2 = false;
+                                    }
+                                    if (string.equals("@JS-START") & !b1 & !b2) {
+                                        b3 = true;
+                                    }
+                                    if (string.equals("@JS-END")) {
+                                        b3 = false;
+                                    }
+                                }
+                            }
+                            if (!b1 & !b2 & !b3 & !value.getPath().contains(".nop")) {
+                                imGui.text(name);
+                                imGui.text(by);
+                                if(imGui.button("停用")){
+                                    value.renameTo(new File(value.getPath()+".nop"));
+                                }
+                            }else if(!b1 & !b2 & !b3){
+                                imGui.text(name);
+                                imGui.text(by);
+                                if(imGui.button("启用")){
+                                    value.renameTo(new File(value.getPath().replace(".nop","")));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             if(TRCOF) {
                 if (imGui.begin("TextReader Config Manager",nb1)) {
                     imGui.setWindowSize("TextReader Config Manager",500,300);
