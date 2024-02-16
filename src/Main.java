@@ -4,9 +4,11 @@ import org.ice1000.jimgui.*;
 import org.ice1000.jimgui.flag.JImWindowFlags;
 import org.ice1000.jimgui.util.JniLoader;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URI;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -326,7 +328,13 @@ public class Main {
                     System.out.println(System.getProperty("user.dir"));
                 }
                 if(imGui.button("在GitHub上查看插件库")){
-
+                    URI uri = URI.create("https://github.com/txlweb/TextReaderJE/tree/master/plugin");
+                    try {
+                        Desktop desktop = Desktop.getDesktop();
+                        desktop.browse(uri);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
                 File file = new File("./plugin/");
                 if (file.isDirectory()) {
